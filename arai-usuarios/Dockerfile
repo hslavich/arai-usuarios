@@ -1,3 +1,5 @@
+LABEL org.opencontainers.image.source=https://github.com/hslavich/arai-usuarios
+
 FROM hub.siu.edu.ar:5005/siu/expedientes/arai-usuarios/idm:v3.0.8
 
 COPY src/SIU/AraiUsuarios/Util/Varios.php /usr/local/app/core/src/SIU/AraiUsuarios/Util/Varios.php
