@@ -89,7 +89,8 @@ class UsuarioHelperLdap extends HelperLdap
     {
         if (isset($datosUsuario) && !empty($datosUsuario)) {
             $usuario = new Usuario();
-            $usuario->setUid(isset($datosUsuario['uid'][0]) ? $datosUsuario['uid'][0] : null);
+            //$usuario->setUid(isset($datosUsuario['uid'][0]) ? $datosUsuario['uid'][0] : null);
+            $usuario->setUid(isset($datosUsuario['login'][0]) ? $datosUsuario['login'][0] : null);
             $usuario->setSn(isset($datosUsuario['sn'][0]) ? $datosUsuario['sn'][0] : null);
             $usuario->setCn(isset($datosUsuario['cn'][0]) ? $datosUsuario['cn'][0] : null);
             $usuario->setDescription(isset($datosUsuario['description'][0]) ? $datosUsuario['description'][0] : null);
