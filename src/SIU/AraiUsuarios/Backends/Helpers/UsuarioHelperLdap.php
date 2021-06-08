@@ -15,6 +15,8 @@ use SIU\AraiUsuarios\Entities\Atributo;
 use SIU\AraiUsuarios\Filters\UsuarioFiltro;
 use SIU\AraiUsuarios\Filters\Filtro;
 use SIU\AraiUsuarios\Filters\CuentaFiltro;
+// Cambio UNQ:
+use SIU\AraiUsuarios\Backends\UsuariosBackendLdap;
 
 class UsuarioHelperLdap extends HelperLdap
 {
@@ -89,8 +91,10 @@ class UsuarioHelperLdap extends HelperLdap
     {
         if (isset($datosUsuario) && !empty($datosUsuario)) {
             $usuario = new Usuario();
-            //$usuario->setUid(isset($datosUsuario['uid'][0]) ? $datosUsuario['uid'][0] : null);
-            $usuario->setUid(isset($datosUsuario['login'][0]) ? $datosUsuario['login'][0] : null);
+            $usuario->setUid(isset($datosUsuario['uid'][0]) ? $datosUsuario['uid'][0] : null);
+            // -- Cambio UNQ: --
+            $usuario->setDn(isset($datosUsuario['dn'][0]) ? $datosUsuario['dn'][0] : null);
+            // -----------------
             $usuario->setSn(isset($datosUsuario['sn'][0]) ? $datosUsuario['sn'][0] : null);
             $usuario->setCn(isset($datosUsuario['cn'][0]) ? $datosUsuario['cn'][0] : null);
             $usuario->setDescription(isset($datosUsuario['description'][0]) ? $datosUsuario['description'][0] : null);
@@ -167,7 +171,7 @@ class UsuarioHelperLdap extends HelperLdap
             $usuario->setMobileVerified(isset($datosUsuario['mobileverified'][0]) ? $datosUsuario['mobileverified'][0] : null);
             $usuario->setUniqueIdentifier(isset($datosUsuario['uniqueidentifier'][0]) ? $datosUsuario['uniqueidentifier'][0] : null);
             $usuario->setMemberOf(isset($datosUsuario['memberof']) ? $datosUsuario['memberof'] : array());
-            
+
             return $usuario;
         } else {
             return null;
@@ -242,7 +246,7 @@ class UsuarioHelperLdap extends HelperLdap
                 }
             }
         }
-       
+
         $arrCuentas = array();
         // Recorro las cuentas y le asocio las aplicaciones
         foreach ($cuentas as $clave => $cuenta) {
@@ -251,7 +255,7 @@ class UsuarioHelperLdap extends HelperLdap
                 $aux = $cuenta;
                 $index = $cuenta['appuniqueid'][0];
                 $appEnCuestion = $aplicaciones[$index];
-                
+
                 //Agrego data extra de la aplicacion a la cuenta
                 $aux['appUniqueId'][] = $index;
                 $aux['url'][] = $appEnCuestion->getUrl();
@@ -471,7 +475,9 @@ class UsuarioHelperLdap extends HelperLdap
 
         foreach ($uidsUsuarios as $uidUsuario) {
             //$filtro->agregarCampo($this->getUniqueAttributeUser(), Filtro::ES_IGUAL_A, array($uidUsuario));
+            // -- Cambio UNQ: --
             $filtro->agregarCampo('uid', Filtro::ES_IGUAL_A, array($uidUsuario));
+            // -----------------
             $filter .= $this->getFilterLdap($filtro, '&', false);
         }
         $filter .= '))';
@@ -696,7 +702,15 @@ class UsuarioHelperLdap extends HelperLdap
             $prefixBaseDN = $this->getPrefixBaseDNUserFrom($uid);
         }
 
-        $dn = $this->getUniqueAttributeUser().'='.$uid.','.$this->getBaseDNUsers($prefixBaseDN);
+        // -- Cambio UNQ: --
+        $backend = new UsuariosBackendLdap($this->driver, $this);
+        $usuario = $backend->getUsuarioByUid($uid);
+        if ($usuario) {
+            $dn = $backend->getUsuarioByUid($uid)->getDn();
+        } else {
+            $dn = $this->getUniqueAttributeUser().'='.$uid.','.$this->getBaseDNUsers($prefixBaseDN);
+        }
+        // -----------------
 
         return $this->driver->escapeDN($dn);
     }
@@ -726,6 +740,10 @@ class UsuarioHelperLdap extends HelperLdap
         if (!$prefixBaseDN) {
             $prefixBaseDN = $this->getPrefixBaseDNUsersAccountsFrom($aid);
         }
+
+        // -- Cambio UNQ: --
+        $prefixBaseDN = '';
+        // -----------------
 
         $dn = $this->getUniqueAttributeUserAccount().'='.$aid.','.$this->getBaseDNUsersAccounts($prefixBaseDN);
 

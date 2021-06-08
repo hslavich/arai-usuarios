@@ -12,7 +12,7 @@ Ldap:
         - account
         - accountArai
     objectClassGroup: groupOfNames
-    uniqueAttributeUser: cn
+    uniqueAttributeUser: uid
     uniqueAttributeUserAccount: aid
     uniqueAttributeConfig: cn
     separadorLdap: '|#|#|'
